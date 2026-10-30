@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 白天：跟 App 的浅色主题同一套色值 -->
+<resources>
+    <color name="widget_bg">#FFFFFFFF</color>
+    <color name="widget_bd">#FFE6EBF2</color>
+    <color name="widget_tx">#FF0C1420</color>
+    <color name="widget_sub">#FF93A1B5</color>
+    <color name="widget_ac">#FF4D6BFE</color>
+    <color name="widget_warn">#FF8A5A1E</color>
+</resources>

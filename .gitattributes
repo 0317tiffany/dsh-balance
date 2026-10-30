@@ -1,0 +1,30 @@
+# 默认：统一用 LF。跨平台项目不该让 Windows 的 CRLF 污染仓库。
+* text=auto eol=lf
+
+# .cmd / .bat 必须 CRLF + ASCII，否则 cmd.exe 按 OEM 代码页读会乱
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# 二进制：不要做换行符转换，也不要尝试 diff
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.apk binary
+*.jar binary
+*.keystore binary
+*.zip binary
+
+# 源码按文本处理（明确声明，避免自动探测误判）
+*.js    text
+*.mjs   text
+*.java  text
+*.xml   text
+*.json  text
+*.html  text
+*.md    text
+*.ps1   text
+*.sh    text
+
+# 让 GitHub 语言统计准确：APK 的 assets 是网页，不算 Java
+dsh-balance.html linguist-documentation
+apk/assets/* linguist-generated

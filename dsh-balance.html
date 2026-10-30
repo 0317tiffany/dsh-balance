@@ -1,0 +1,1253 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#F2F5FA" id="mtc">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default" id="mtb">
+<title>DeepSeek 余额</title>
+<style>
+/* ══════════════════════════════════════════════════════════════
+   配色：每层表面只差 1%–5%，靠微差叠层级，不靠强对比
+   浅色  bg #F2F5FA → s1 #FFFFFF(+3.2%) → s2 #FBFCFE(+1.2%)
+                → s3 #F7F9FC(+1.5%) → s4 #F2F5F9(+2.0%)
+   深色  bg #0A0D12 → s1 #14181F(+3.0%) → s2 #11151C(+2.4%)
+                → s3 #171C25(+1.8%) → s4 #1C222C(+2.4%)
+   深色根字号 15px / 浅色 16px —— 夜间整站字小一号
+   ══════════════════════════════════════════════════════════════ */
+:root{ --fs:16px; --r-lg:20px; --r-md:16px; --r-sm:11px; --gap:9px;
+       --ease:cubic-bezier(.22,.61,.36,1); }
+html[data-theme="light"]{
+  --fs:16px;
+  --bg:#F2F5FA; --s1:#FFFFFF; --s2:#FBFCFE; --s3:#F7F9FC; --s4:#F2F5F9;
+  --bd:#E6EBF2; --bd2:#EFF3F8;
+  --tx:#0C1420; --tx2:#56657E; --tx3:#93A1B5;
+  --ac:#4D6BFE; --ac-bg:#EDF1FF; --ac-line:#DBE3FF;
+  --ok:#0E9F76; --ok-bg:#E8F7F1;
+  --wn-bg:#FFF7EC; --wn-bd:#F2E2CB; --wn-tx:#8A5A1E;
+  --off:#94A3B8; --off-bg:#EEF1F6;
+  --sh1:0 1px 2px rgba(16,24,40,.04), 0 8px 20px -12px rgba(16,24,40,.16);
+  --sh2:0 1px 2px rgba(16,24,40,.03);
+  --bar:linear-gradient(180deg,#6E86FF,#4D6BFE);
+}
+html[data-theme="dark"]{
+  --fs:15px;
+  --bg:#0A0D12; --s1:#14181F; --s2:#11151C; --s3:#171C25; --s4:#1C222C;
+  --bd:#232A36; --bd2:#1B212A;
+  --tx:#E8EDF5; --tx2:#9AA7BB; --tx3:#6B7A91;
+  --ac:#7289FF; --ac-bg:#1A2242; --ac-line:#2A3459;
+  --ok:#34C79B; --ok-bg:#122A24;
+  --wn-bg:#241B0F; --wn-bd:#3A2C18; --wn-tx:#E0B173;
+  --off:#6B7A91; --off-bg:#1B212A;
+  --sh1:0 1px 2px rgba(0,0,0,.35), 0 10px 24px -14px rgba(0,0,0,.7);
+  --sh2:0 1px 2px rgba(0,0,0,.25);
+  --bar:linear-gradient(180deg,#8496FF,#5C74F5);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{font-size:var(--fs);}
+body{
+  background:var(--bg);color:var(--tx);
+  font-family:"HarmonyOS Sans SC","MiSans","PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  transition:background .28s var(--ease),color .28s var(--ease);
+  overscroll-behavior-y:contain;
+  display:flex;flex-direction:column;min-height:100dvh;
+}
+.n{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;letter-spacing:-.01em;}
+.app{
+  width:100%;max-width:520px;margin:0 auto;flex:1;
+  /* 默认保底内边距（旧 WebView 不认 env()/max() 也能正甡显示） */
+  padding:1.5rem .85rem .8rem;
+  display:flex;flex-direction:column;gap:var(--gap);
+}
+/* 新 WebView：取安全区与保底值的较大者 */
+@supports (padding:max(0px)){
+  .app{
+    padding:max(env(safe-area-inset-top, 0px), 1.5rem) .85rem
+            max(env(safe-area-inset-bottom, 0px), .8rem);
+  }
+}
+/* 原生层注入的真实状态栏高度（APK 里由 Java 算好）优先 */
+body.has-sbh .app{padding-top:calc(var(--sbh, 0px) + .55rem);}
+
+/* ── 顶栏 ── */
+.bar{display:flex;align-items:center;gap:.5rem;padding:.15rem .1rem .25rem;position:relative;z-index:20;}
+.brand{flex:1;display:flex;align-items:center;gap:.45rem;min-width:0;}
+.mark{width:1.5rem;height:1.5rem;border-radius:.5rem;flex:0 0 auto;background:var(--bar);
+  display:grid;place-items:center;color:#fff;font-size:.72rem;font-weight:800;letter-spacing:-.04em;}
+.brand h1{font-size:.98rem;font-weight:650;white-space:nowrap;}
+.brand .sub{font-size:.7rem;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ico{width:2.2rem;height:2.2rem;flex:0 0 auto;border-radius:.7rem;background:var(--s1);
+  border:1px solid var(--bd);color:var(--tx2);display:grid;place-items:center;cursor:pointer;
+  transition:transform .16s var(--ease),background .2s var(--ease);}
+.ico:active{transform:scale(.9);background:var(--s4);}
+.ico svg{width:1.05rem;height:1.05rem;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+
+/* ── 余额主卡 ── */
+.hero{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r-lg);
+  padding:1.05rem 1.1rem .95rem;box-shadow:var(--sh1);position:relative;overflow:hidden;}
+.hero::after{content:"";position:absolute;right:-3rem;top:-4rem;width:11rem;height:11rem;
+  border-radius:50%;background:radial-gradient(circle,var(--ac-bg),transparent 68%);opacity:.85;pointer-events:none;}
+.hero .cap{font-size:.72rem;color:var(--tx3);font-weight:550;letter-spacing:.06em;display:flex;align-items:center;gap:.35rem;}
+.hero .cap .pip{width:.36rem;height:.36rem;border-radius:50%;background:var(--ok);box-shadow:0 0 0 .18rem var(--ok-bg);}
+.hero.offline .cap .pip{background:var(--off);box-shadow:0 0 0 .18rem var(--off-bg);}
+/* 离线时主卡整张转为暖灰 —— 一眼就能看出“这不是实时数据” */
+.hero.offline{background:var(--wn-bg);border-color:var(--wn-bd);}
+.hero.offline .amt .v,.hero.offline .amt .dec,.hero.offline .amt .cur{color:var(--wn-tx);}
+.hero.offline .amt .cur{opacity:.8;}
+.hero.offline::after{opacity:.2;}
+.hero.offline .cap,.hero.offline .meta{color:var(--wn-tx);opacity:.75;}
+.amt{display:flex;align-items:baseline;gap:.22rem;margin:.42rem 0 .1rem;position:relative;}
+.amt .cur{font-size:1.32rem;font-weight:600;color:var(--ac);}
+.amt .v{font-size:2.62rem;font-weight:700;line-height:1;letter-spacing:-.035em;}
+.amt .dec{font-size:1.62rem;font-weight:650;color:var(--tx2);}
+.meta{display:flex;align-items:center;gap:.4rem;font-size:.7rem;color:var(--tx3);margin-top:.3rem;flex-wrap:wrap;}
+.meta .tag{background:var(--ac-bg);color:var(--ac);border:1px solid var(--ac-line);
+  border-radius:999px;padding:.1rem .45rem;font-size:.66rem;font-weight:600;}
+.meta .tag.off{background:var(--off-bg);color:var(--off);border-color:var(--bd);}
+
+/* ── 两格统计 ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);}
+.tile{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r-md);
+  padding:.72rem .8rem;box-shadow:var(--sh2);}
+.tile .cap{font-size:.7rem;color:var(--tx3);font-weight:550;}
+.tile .val{font-size:1.22rem;font-weight:680;margin-top:.2rem;letter-spacing:-.02em;}
+.tile .foot{font-size:.66rem;color:var(--tx3);margin-top:.18rem;}
+
+/* ── 卡片 ── */
+.card{background:var(--s3);border:1px solid var(--bd2);border-radius:var(--r-md);
+  padding:.8rem .85rem;box-shadow:var(--sh2);}
+.card.grow{display:flex;flex-direction:column;}
+.card .hd{display:flex;align-items:center;justify-content:space-between;gap:.4rem;margin-bottom:.6rem;}
+.card .hd .t{font-size:.78rem;font-weight:620;color:var(--tx2);white-space:nowrap;}
+.card .hd .r{font-size:.68rem;color:var(--tx3);white-space:nowrap;}
+
+/* 小分段控件 */
+.seg-mini{display:flex;gap:.12rem;background:var(--s4);border-radius:999px;padding:.16rem;flex:0 0 auto;}
+.seg-mini button{border:0;background:transparent;color:var(--tx3);font-family:inherit;
+  font-size:.66rem;font-weight:600;padding:.26rem .48rem;border-radius:999px;cursor:pointer;
+  transition:all .2s var(--ease);white-space:nowrap;}
+.seg-mini button.on{background:var(--s1);color:var(--ac);box-shadow:var(--sh2);}
+
+/* 柱状图 */
+/* 高度写死，不再被屏幕高度“拉”开；底部留出日期层的高度 */
+.chart{display:flex;align-items:stretch;gap:.28rem;height:7.5rem;flex:0 0 auto;
+  justify-content:center;padding-bottom:1.05rem;}
+.chart.dense{gap:.14rem;}
+.col{flex:1 1 0;max-width:2rem;position:relative;display:flex;flex-direction:column;align-items:center;gap:.3rem;
+  justify-content:flex-end;min-width:0;cursor:pointer;}
+.col .bar{width:100%;border-radius:.25rem .25rem .12rem .12rem;background:var(--bar);
+  opacity:.42;transition:height .45s var(--ease),opacity .2s var(--ease);min-height:.18rem;}
+.chart.dense .col .bar{border-radius:.13rem .13rem .06rem .06rem;}
+.col.today .bar{opacity:1;}
+.col.sel .bar{opacity:1;box-shadow:0 0 0 .12rem var(--ac-bg);}
+.col.nb .bar{display:none;}
+/* 日期绝对定位挂在格子下方：格子只有十几像素宽也不会把字压糊 */
+.col .lb{position:absolute;bottom:-1.05rem;left:50%;transform:translateX(-50%);
+  font-size:.6rem;color:var(--tx3);white-space:nowrap;}
+.chart.dense .col .lb{font-size:.58rem;}
+.col.today .lb,.col.sel .lb{color:var(--ac);font-weight:650;}
+/* 月视图：柱子适度加宽、标签紧贴柱底，看着才像“一个月的总量” */
+.chart.monthly .col{max-width:2rem;flex:1 1 0;}
+.chart.monthly .col .bar{border-radius:.3rem .3rem .1rem .1rem;}
+    .chart.monthly .col .lb{bottom:-1.0rem;font-size:.64rem;font-weight:600;}
+  /* 月视图里月份标签始终居中，不套首尾贴边规则——贴边会把“10月”拽歪 */
+  .chart.monthly .col:first-child .lb,
+  .chart.monthly .col:last-child .lb{left:50%;right:auto;transform:translateX(-50%);}
+.chart.monthly .col.today .lb{color:var(--ac);}
+.chart.monthly .col.nb .lb{color:var(--tx3);font-weight:500;}
+/* 无数据月份：整列级淡虚线底槽，与有数据的实心柱形成区分 */
+.chart.monthly .col.nb .bar{
+  background:transparent;border:1px dashed var(--bd);border-bottom:0;
+  border-radius:.3rem .3rem 0 0;height:100%!important;
+}
+.col:first-child .lb{left:0;transform:none;}
+.col:last-child .lb{left:auto;right:0;transform:none;}
+.chart-note{font-size:.64rem;color:var(--tx3);margin-top:.45rem;text-align:center;}
+
+/* 模型占比 */
+.rows{display:flex;flex-direction:column;gap:.5rem;}
+.row{display:grid;grid-template-columns:1fr auto;gap:.18rem .5rem;align-items:center;}
+.row .nm{font-size:.74rem;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.row .pc{font-size:.72rem;font-weight:650;}
+.row .track{grid-column:1/3;height:.3rem;border-radius:999px;background:var(--s4);overflow:hidden;}
+.row .fill{height:100%;border-radius:999px;background:var(--bar);transition:width .55s var(--ease);}
+
+/* 续航条 */
+.strip{display:flex;align-items:center;gap:.45rem;background:var(--s2);border:1px solid var(--bd);
+  border-radius:var(--r-md);padding:.55rem .72rem;font-size:.74rem;color:var(--tx2);box-shadow:var(--sh2);}
+.strip.warn{background:var(--wn-bg);border-color:var(--wn-bd);color:var(--wn-tx);}
+.strip b{font-variant-numeric:tabular-nums;}
+.strip .si{font-size:.82rem;flex:0 0 auto;opacity:.9;}
+.strip .chip{margin-left:auto;flex:0 0 auto;font-size:.66rem;font-weight:650;
+  padding:.12rem .44rem;border-radius:999px;background:var(--wn-bd);color:var(--wn-tx);}
+.strip .chip.ok{background:var(--ok-bg);color:var(--ok);}
+.strip .chip:empty{display:none;}
+
+/* 底部 */
+.tail{margin-top:auto;display:flex;flex-direction:column;gap:.5rem;padding-top:.3rem;}
+.btn{width:100%;border:1px solid var(--ac-line);background:var(--ac-bg);color:var(--ac);
+  border-radius:var(--r-md);padding:.72rem;font-size:.84rem;font-weight:650;font-family:inherit;
+  display:flex;align-items:center;justify-content:center;gap:.42rem;cursor:pointer;
+  transition:transform .16s var(--ease),opacity .2s var(--ease);}
+.btn:active{transform:scale(.985);}
+.btn[disabled]{opacity:.6;}
+.btn svg{width:.95rem;height:.95rem;stroke:currentColor;fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+/* 主题过渡：只在用户主动切换时挂上，避免首屏加载闪一下 */
+html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after{
+  transition: background-color .34s ease, color .34s ease, border-color .34s ease,
+              box-shadow .34s ease, opacity .34s ease, fill .34s ease, stroke .34s ease !important;
+}
+/* 余额数字更新时闪一下，明确告诉用户“真的刷新了” */
+@keyframes numflash{0%{transform:translateY(-.2em);opacity:.3}100%{transform:none;opacity:1}}
+.amt.flash{animation:numflash .45s var(--ease);}
+.spin{animation:sp .8s linear infinite;transform-box:fill-box;transform-origin:center;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.foot-note{font-size:.64rem;color:var(--tx3);text-align:center;line-height:1.5;}
+
+/* 浮动提示 */
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + .8rem);z-index:80;
+  transform:translate(-50%,-160%);opacity:0;pointer-events:none;
+  background:var(--tx);color:var(--bg);border-radius:999px;padding:.44rem .85rem;
+  font-size:.72rem;font-weight:650;box-shadow:0 12px 30px -14px rgba(0,0,0,.6);
+  transition:transform .3s var(--ease),opacity .3s var(--ease);
+  max-width:92vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.toast.on{transform:translate(-50%,0);opacity:1;}
+.toast.warn{background:var(--wn-tx);color:var(--wn-bg);}
+
+/* 抽屉 */
+.mask{position:fixed;inset:0;background:rgba(8,12,20,.42);opacity:0;visibility:hidden;
+  transition:opacity .24s var(--ease),visibility .24s;z-index:40;}
+.mask.on{opacity:1;visibility:visible;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--s1);
+  border-radius:1.1rem 1.1rem 0 0;border-top:1px solid var(--bd);
+  padding:1rem .95rem calc(env(safe-area-inset-bottom) + 1rem);
+  transform:translateY(110%);transition:transform .3s var(--ease);
+  max-width:520px;margin:0 auto;box-shadow:0 -14px 40px -20px rgba(8,12,20,.5);
+  max-height:90dvh;overflow-y:auto;}
+.sheet.on{transform:translateY(0);}
+.sheet .grab{width:2.2rem;height:.24rem;border-radius:999px;background:var(--bd);margin:0 auto .85rem;}
+.sheet h2{font-size:.9rem;font-weight:680;margin-bottom:.7rem;}
+.sheet h2 .d{font-size:.72rem;color:var(--tx3);font-weight:550;margin-left:.4rem;}
+.sheet .lbl{font-size:.7rem;color:var(--tx3);font-weight:550;margin:.1rem 0 .3rem;}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:.3rem;background:var(--s4);
+  border-radius:var(--r-sm);padding:.22rem;margin-bottom:.85rem;}
+.seg.c4{grid-template-columns:repeat(2,1fr);}
+.seg button{border:0;background:transparent;color:var(--tx2);font-family:inherit;
+  font-size:.75rem;font-weight:600;padding:.48rem .2rem;border-radius:.55rem;cursor:pointer;
+  transition:all .2s var(--ease);}
+.seg button.on{background:var(--s1);color:var(--ac);box-shadow:var(--sh2);}
+.fld{margin-bottom:.62rem;}
+.fld label{display:block;font-size:.7rem;color:var(--tx3);margin-bottom:.28rem;font-weight:550;}
+.fld input{width:100%;background:var(--s3);border:1px solid var(--bd);border-radius:var(--r-sm);
+  padding:.58rem .62rem;font-size:.78rem;color:var(--tx);font-family:inherit;outline:none;}
+.fld input:focus{border-color:var(--ac);}
+.hint{font-size:.65rem;color:var(--tx3);line-height:1.55;margin-top:.1rem;}
+.hint code{background:var(--s4);border-radius:.25rem;padding:.05rem .28rem;font-size:.62rem;}
+.hint .em{color:var(--ac);font-weight:600;}
+
+/* 日明细（点柱子弹出） */
+.kv{display:flex;justify-content:space-between;gap:1rem;font-size:.76rem;padding:.42rem 0;
+  border-bottom:1px solid var(--bd2);}
+.kv:last-of-type{border-bottom:0;}
+.kv .k{color:var(--tx3);}
+.kv .v{font-weight:650;font-variant-numeric:tabular-nums;}
+.subhead{font-size:.7rem;color:var(--tx3);font-weight:600;margin:.7rem 0 .35rem;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="bar">
+    <div class="brand">
+      <div class="mark">DS</div>
+      <div style="min-width:0">
+        <h1>DeepSeek 余额</h1>
+        <div class="sub" id="srcName">加载中…</div>
+      </div>
+    </div>
+    <button class="ico" data-act="theme" type="button" aria-label="切换白天夜间">
+      <svg viewBox="0 0 24 24"><path id="themeIco" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+    <button class="ico" data-act="settings" type="button" aria-label="设置">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7.5 19l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 3.6 15H3.5a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 5 9.5l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 10.5 3.6V3.5a2 2 0 1 1 4 0v.1A1.6 1.6 0 0 0 16.5 5l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 1.1 2.7h.1a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1 .5z"/></svg>
+    </button>
+  </div>
+
+  <div class="hero" id="hero">
+    <div class="cap"><span class="pip"></span>剩余余额</div>
+    <div class="amt n"><span class="cur">¥</span><span class="v" id="balInt">--</span><span class="dec" id="balDec"></span></div>
+    <div class="meta">
+      <span id="updAt">正在读取…</span>
+      <span id="modeTag" class="tag">—</span>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="tile">
+      <div class="cap" id="todayCap">今日消耗</div>
+      <div class="val n">¥<span id="today">--</span></div>
+      <div class="foot" id="todayPct">—</div>
+    </div>
+    <div class="tile">
+      <div class="cap" id="weekCap">近 7 日消耗</div>
+      <div class="val n">¥<span id="week">--</span></div>
+      <div class="foot" id="avg">—</div>
+    </div>
+  </div>
+
+  <div class="strip" id="strip">
+    <span class="si" id="stripIco">◷</span>
+    <span id="stripTxt">正在估算余额续航…</span>
+    <span class="chip" id="stripChip"></span>
+  </div>
+
+  <div class="card grow">
+    <div class="hd">
+      <div class="t">消耗趋势</div>
+      <div style="display:flex;gap:.35rem;align-items:center">
+        <div class="seg-mini" id="segMetric">
+          <button type="button" data-act="metric" data-m="cost">金额</button>
+          <button type="button" data-act="metric" data-m="token">Token</button>
+        </div>
+        <div class="seg-mini" id="segPeriod">
+          <button type="button" data-act="period" data-p="7">7天</button>
+          <button type="button" data-act="period" data-p="month">按月</button>
+        </div>
+      </div>
+    </div>
+    <div class="chart" id="chart"></div>
+    <div class="chart-note" id="chartNote"></div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><div class="t" id="modelCap">模型 token 占比</div><div class="r" id="tokTotal"></div></div>
+    <div class="rows" id="models"></div>
+  </div>
+
+  <div class="tail">
+    <button class="btn" data-act="refresh" id="refBtn" type="button">
+      <svg viewBox="0 0 24 24" id="refIco"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>
+      <span id="refLabel">刷新余额</span>
+    </button>
+    <div class="foot-note" id="hintNote">点右上角 ⚙ 选择数据来源</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="mask" id="mask" data-act="close"></div>
+
+<!-- 设置 -->
+<div class="sheet" id="sheet">
+  <div class="grab"></div>
+  <h2>设置</h2>
+
+  <div class="lbl">外观</div>
+  <div class="seg" id="segTheme">
+    <button type="button" data-act="thmode" data-t="auto">跟随系统</button>
+    <button type="button" data-act="thmode" data-t="light">白天</button>
+    <button type="button" data-act="thmode" data-t="dark">夜间</button>
+  </div>
+
+  <div class="lbl">数据来源</div>
+  <div class="seg c4" id="segMode">
+    <button type="button" data-act="mode" data-mode="lan">局域网·电脑</button>
+    <button type="button" data-act="mode" data-mode="api">官方 API Key</button>
+    <button type="button" data-act="mode" data-mode="custom">自定义接口</button>
+    <button type="button" data-act="mode" data-mode="demo">演示数据</button>
+  </div>
+
+  <div id="paneLan">
+    <div class="fld">
+      <label>电脑地址（DSH 所在机器）</label>
+      <input id="inLan" placeholder="http://192.168.1.10:8787" inputmode="url" autocomplete="off">
+    </div>
+    <div class="hint">电脑上双击 <code>启动余额服务.cmd</code>。可以填多个地址用 <code>|</code> 分隔，App 会逐个探测。<br>
+      <span class="em">电脑关机后，本页仍会显示最后一次同步到的数据（带「离线」标记）。</span></div>
+  </div>
+
+  <div id="paneApi" style="display:none">
+    <div class="fld">
+      <label>DeepSeek 官方 API Key</label>
+      <input id="inKey" placeholder="sk-..." autocomplete="off" spellcheck="false">
+    </div>
+    <div class="hint">
+      必须是 <code>sk-</code> 开头的<strong>接口密钥</strong>，去 <span class="em">platform.deepseek.com → API keys</span> 新建。<br>
+      注意：网页版登录用的账号 token <strong>不是</strong> API Key，官方余额接口会返回 401。<br>
+      此模式只有余额，没有历史曲线。装成 APK 后由原生层发请求，不受浏览器跨域限制。
+    </div>
+  </div>
+
+  <div id="paneCustom" style="display:none">
+    <div class="fld">
+      <label>接口地址（中转站/自建代理）</label>
+      <input id="inUrl" placeholder="https://api.example.com/user/balance" inputmode="url" autocomplete="off">
+    </div>
+    <div class="fld">
+      <label>密钥（可选，会以 Bearer 发送）</label>
+      <input id="inCKey" placeholder="sk-... 或留空" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="fld">
+      <label>余额字段路径（可选）</label>
+      <input id="inPath" placeholder="balance_infos.0.total_balance" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="hint">留空路径会自动猜常见字段（data.balance / total_balance / balance / quota）。</div>
+  </div>
+
+  <div id="paneDemo" style="display:none">
+    <div class="hint">展示用静态数据（取自本机真实账本 2026-10-20 ~ 10-27）。</div>
+  </div>
+
+  <button class="btn" data-act="save" type="button" style="margin-top:.85rem">保存并刷新</button>
+  <div class="hint" id="cfgState" style="text-align:center;margin-top:.5rem"></div>
+</div>
+
+<!-- 某一天的明细（点柱子） -->
+<div class="sheet" id="daySheet">
+  <div class="grab"></div>
+  <h2 id="dayTitle">当日明细<span class="d" id="daySub"></span></h2>
+  <div id="dayBody"></div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   所有按钮走事件委托，先注册；localStorage/matchMedia 全部降级保护，
+   任何后续初始化异常都不会让按钮变成死的。
+   ════════════════════════════════════════════════════════════════ */
+'use strict';
+
+var store = (function () {
+  var ok = true;
+  try { localStorage.setItem('__t', '1'); localStorage.removeItem('__t'); } catch (e) { ok = false; }
+  return {
+    get: function (k, d) { if (!ok) return d; try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } },
+    set: function (k, v) { if (!ok) return; try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+})();
+
+var $ = function (id) { return document.getElementById(id); };
+
+var S = {
+  theme: store.get('dsh.theme', 'auto'),
+  mode: store.get('dsh.mode', 'demo'),
+  period: (store.get('dsh.period', '7') === 'month') ? 'month' : '7',
+  metric: store.get('dsh.metric', 'cost'),
+  lan: store.get('dsh.lan', ''),
+  key: store.get('dsh.key', ''),
+  url: store.get('dsh.url', ''),
+  ckey: store.get('dsh.ckey', ''),
+  path: store.get('dsh.path', ''),
+  candidates: [],
+  data: null,
+  live: false,     // 当前显示的是实时数据还是离线快照
+  busy: false,
+  selDay: null
+};
+
+try {
+  var _q = new URLSearchParams(location.search);
+  var _t = _q.get('theme'); if (_t === 'light' || _t === 'dark') S.theme = _t;
+  var _p = _q.get('period'); if (_p === '7' || _p === 'month') S.period = _p;
+  var _m = _q.get('metric'); if (_m === 'cost' || _m === 'token') S.metric = _m;
+} catch (e) {}
+
+/* APK 原生层注入真实状态栏高度（env(safe-area-inset-top) 在安卓 WebView 里常常是 0）*/
+try {
+  if (window.__SBH && !isNaN(+window.__SBH)) {
+    document.documentElement.style.setProperty('--sbh', (+window.__SBH) + 'px');
+    document.body.classList.add('has-sbh');
+  }
+} catch (e) {}
+
+/* APK 注入的候选地址：三重来源（全局变量 / ?lan= / #lan=），安卓 WebView 对 file:// 查询串支持不稳 */
+try {
+  var _lan = window.__DSH_LAN || null;
+  if (!_lan) _lan = new URLSearchParams(location.search).get('lan');
+  if (!_lan && location.hash && location.hash.indexOf('lan=') >= 0) {
+    _lan = decodeURIComponent(location.hash.split('lan=')[1]);
+  }
+  if (_lan) S.candidates = _lan.split('|').filter(Boolean);
+} catch (e) {}
+if (!S.lan && S.candidates.length) { S.lan = S.candidates[0]; store.set('dsh.lan', S.lan); }
+
+/* 默认数据源。优先级：用户存过的 > APK 注入的默认值 > demo。
+   注意：API Key 永远不写进 APK（内置 key = 全网公开），
+   只能由用户自己在设置里填，只存手机本地。 */
+try {
+  var _savedMode = store.get('dsh.mode', '');
+  if (_savedMode) {
+    S.mode = _savedMode;
+  } else if (window.__DSH_MODE === 'api' || window.__DSH_MODE === 'lan') {
+    S.mode = window.__DSH_MODE;
+    store.set('dsh.mode', S.mode);
+  } else if (S.candidates.length) {
+    S.mode = 'lan';
+    store.set('dsh.mode', 'lan');
+  }
+} catch (e) {}
+
+/* ── 提示 ── */
+var _tt;
+function toast(msg, warn) {
+  try {
+    var el = $('toast');
+    el.textContent = msg;
+    el.className = 'toast on' + (warn ? ' warn' : '');
+    clearTimeout(_tt);
+    _tt = setTimeout(function () { el.className = 'toast'; }, warn ? 4200 : 2000);
+  } catch (e) {}
+}
+
+/* ── 主题 ── */
+var mq = null;
+try { mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null; } catch (e) {}
+function resolveTheme() {
+  if (S.theme === 'auto') return (mq && mq.matches) ? 'dark' : 'light';
+  return S.theme;
+}
+function applyTheme(smooth) {
+  try {
+    var real = resolveTheme();
+    if (smooth) {
+      document.documentElement.classList.add('theme-anim');
+      clearTimeout(applyTheme._t);
+      applyTheme._t = setTimeout(function () {
+        document.documentElement.classList.remove('theme-anim');
+      }, 420);
+    }
+    document.documentElement.setAttribute('data-theme', real);
+    var d = real === 'dark'
+      ? 'M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4'
+      : 'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z';
+    var ico = $('themeIco'); if (ico) ico.setAttribute('d', d);
+    var cs = getComputedStyle(document.documentElement);
+    var bg = (cs.getPropertyValue('--bg') || '').trim();
+    var m1 = $('mtc'); if (m1 && bg) m1.setAttribute('content', bg);
+    var m2 = $('mtb'); if (m2) m2.setAttribute('content', real === 'dark' ? 'black-translucent' : 'default');
+    try { if (window.AndroidHost && AndroidHost.onTheme) AndroidHost.onTheme(real); } catch (e) {}
+  } catch (e) {}
+}
+try {
+  if (mq) {
+    if (mq.addEventListener) mq.addEventListener('change', function () { if (S.theme === 'auto') applyTheme(true); });
+    else if (mq.addListener) mq.addListener(function () { if (S.theme === 'auto') applyTheme(true); });
+  }
+} catch (e) {}
+
+/* ── HTTP：APK 里走原生（绕过浏览器跨域），网页里退回 fetch ── */
+function httpGet(url, bearer, ctl) {
+  if (window.AndroidHost && AndroidHost.httpGet) {
+    try {
+      var r = JSON.parse(AndroidHost.httpGet(url, bearer || ''));
+      return Promise.resolve(r);
+    } catch (e) {}
+  }
+  var opt = { cache: 'no-store', headers: { 'Accept': 'application/json' } };
+  if (bearer) opt.headers['Authorization'] = 'Bearer ' + bearer;
+  if (ctl && ctl.signal) opt.signal = ctl.signal;
+  return fetch(url, opt).then(function (res) {
+    return res.text().then(function (t) { return { status: res.status, body: t }; });
+  });
+}
+
+function pick(obj, path) {
+  var cur = obj, parts = String(path).split('.');
+  for (var i = 0; i < parts.length; i++) {
+    if (cur === null || cur === undefined) return undefined;
+    cur = cur[parts[i]];
+  }
+  return cur;
+}
+function guessBalance(j) {
+  var tries = ['balance_infos.0.total_balance','data.balance','data.total_balance','total_balance',
+               'balance','data.quota','quota','data.remain','remain','data.available'];
+  for (var i = 0; i < tries.length; i++) {
+    var v = pick(j, tries[i]);
+    if (v !== undefined && v !== null && v !== '' && !isNaN(parseFloat(v))) return parseFloat(v);
+  }
+  return null;
+}
+
+/* ── 数据 ── */
+var DEMO = {
+  balance: 12.2945, todayUsage: 0.915,
+  history: {"2026-10-20":0.185892,"2026-10-21":5.072692,"2026-10-22":15.071061,"2026-10-23":1.770768,"2026-10-24":0.018005,"2026-10-25":0.017313,"2026-10-26":0.383861,"2026-10-27":0.915037},
+  tokensByDay: {"2026-10-20":2520271,"2026-10-21":117574658,"2026-10-22":378919741,"2026-10-23":133114179,"2026-10-24":211422217,"2026-10-26":94276935,"2026-10-27":52160669},
+  models: [{"name":"deepseek-flash","pct":58.7},{"name":"DeepSeek-V4.1-Flash","pct":22.9},{"name":"DeepSeek-V4-Pro","pct":13.2},{"name":"DeepSeek-V4-Flash","pct":4.4},{"name":"qmodel_38max","pct":0.3}],
+  modelsByPeriod: {"7":[],"14":[],"30":[]},
+  tokens: 967487330, daysAvailable: 8
+};
+DEMO.modelsByPeriod['7'] = DEMO.models;
+DEMO.modelsByPeriod['14'] = DEMO.models;
+DEMO.modelsByPeriod['30'] = DEMO.models;
+/* 演示模式的日明细（真实账本） */
+DEMO.detailByDay = {
+  "2026-10-20": {tokens:2520271,  models:[{name:"deepseek-flash",tokens:2520271}]},
+  "2026-10-21": {tokens:117574658,models:[{name:"deepseek-flash",tokens:117574658}]},
+  "2026-10-22": {tokens:378919741,models:[{name:"deepseek-flash",tokens:378919741}]},
+  "2026-10-23": {tokens:133114179,models:[{name:"deepseek-flash",tokens:133114179}]},
+  "2026-10-24": {tokens:211422217,models:[{name:"DeepSeek-V4.1-Flash",tokens:108764611},{name:"DeepSeek-V4-Pro",tokens:102657606}]},
+  "2026-10-26": {tokens:94276935, models:[{name:"DeepSeek-V4.1-Flash",tokens:89269874},{name:"deepseek-flash",tokens:5007061}]},
+  "2026-10-27": {tokens:52160669, models:[{name:"DeepSeek-V4.1-Flash",tokens:38396528},{name:"deepseek-flash",tokens:12166516},{name:"deepseek-v4.1-flash",tokens:1597625}]}
+};
+/* 月度聚合（真实账本：2026-10 全月） */
+DEMO.months = ["2026-10"];
+DEMO.costByMonth = {"2026-10": 23.4346};
+DEMO.tokensByMonth = {"2026-10": 1011855172};
+DEMO.modelsByMonth = {"2026-10": [
+  {name:"deepseek-flash",tokens:573655513,pct:56.7},
+  {name:"DeepSeek-V4.1-Flash",tokens:257097756,pct:25.4},
+  {name:"DeepSeek-V4-Pro",tokens:128245982,pct:12.7},
+  {name:"DeepSeek-V4-Flash",tokens:42650407,pct:4.2},
+  {name:"qmodel_38max",tokens:3111165,pct:0.3}
+]};
+DEMO.detailByMonth = {"2026-10": {tokens:1011855172, models:[
+  {name:"deepseek-flash",tokens:573655513},
+  {name:"DeepSeek-V4.1-Flash",tokens:257097756},
+  {name:"DeepSeek-V4-Pro",tokens:128245982},
+  {name:"DeepSeek-V4-Flash",tokens:42650407},
+  {name:"qmodel_38max",tokens:3111165}
+]}};
+
+var MODE_LABEL = { demo: '演示数据', lan: '局域网 · DSH', api: '官方 API', custom: '自定义接口' };
+var num2 = function (v) { return (Math.round((+v || 0) * 100) / 100).toFixed(2); };
+function fmtTokens(n) {
+  n = +n || 0;
+  if (n >= 1e8) return (n / 1e8).toFixed(2) + ' 亿';
+  if (n >= 1e4) return (n / 1e4).toFixed(1) + ' 万';
+  return String(n);
+}
+
+function fetchData() {
+  if (S.mode === 'demo') return Promise.resolve(DEMO);
+
+  if (S.mode === 'lan') {
+    var list = [];
+    if (S.lan) { S.lan.split('|').forEach(function (u) { if (u && list.indexOf(u) < 0) list.push(u); }); }
+    S.candidates.forEach(function (u) { if (list.indexOf(u) < 0) list.push(u); });
+    if (!list.length) return Promise.reject(new Error('还没填电脑地址'));
+
+    /* APK：交给 Java 并行探测。这里用异步回调而不是直接 return 结果——
+       JS 桥的同步调用会把 WebView 主线程卡死最长 6 秒，首帧都画不出来，
+       电脑离线时就是白屏。 */
+    if (window.AndroidHost && AndroidHost.probeLanAsync) {
+      return new Promise(function (resolve, reject) {
+        var settled = false;
+        window.__probeCb = function (st, body) {
+          if (settled) return; settled = true;
+          try { delete window.__probeCb; } catch (e) {}
+          if (st === 200) {
+            try {
+              var j = JSON.parse(body);
+              if (j && j.error) return reject(new Error(j.error));
+              resolve(j);
+            } catch (e) { reject(new Error('电脑返回的不是合法 JSON')); }
+          } else {
+            reject(new Error('电脑连不上（没开机 / 不在同一 WiFi / 防火墙没放行）'));
+          }
+        };
+        // 双保险：8 秒后 Java 还没回调就自行判定离线
+        setTimeout(function () {
+          if (settled) return; settled = true;
+          reject(new Error('电脑连不上（没开机 / 不在同一 WiFi / 防火墙没放行）'));
+        }, 8000);
+        try { AndroidHost.probeLanAsync(list.join('|'), '/api/balance'); } catch (e) {}
+      });
+    }
+
+    /* 旧版 APK 没有异步桥时的降级（同步调用） */
+    if (window.AndroidHost && AndroidHost.probeLan) {
+      return new Promise(function (resolve, reject) {
+        var r = null;
+        try { r = JSON.parse(AndroidHost.probeLan(list.join('|'), '/api/balance')); } catch (e) { r = null; }
+        if (r && r.status === 200) {
+          try {
+            var j = JSON.parse(r.body);
+            if (j && j.error) return reject(new Error(j.error));
+            return resolve(j);
+          } catch (e) { return reject(new Error('电脑返回的不是合法 JSON')); }
+        }
+        reject(new Error('电脑连不上（没开机 / 不在同一 WiFi / 防火墙没放行）'));
+      });
+    }
+
+    /* 网页端：并行 fetch，谁先成功用谁 */
+    return new Promise(function (resolve, reject) {
+      var left = list.length, done = false, firstErr = null;
+      list.forEach(function (item) {
+        var base = String(item).replace(/\/+$/, '');
+        var ctl = window.AbortController ? new AbortController() : null;
+        var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 2600);
+        httpGet(base + '/api/balance', null, ctl).then(function (r) {
+          clearTimeout(timer);
+          if (done) return;
+          if (r.status < 200 || r.status >= 300) throw new Error('HTTP ' + r.status);
+          var j = JSON.parse(r.body);
+          if (j && j.error) throw new Error(j.error);
+          done = true;
+          if (S.lan !== item) { S.lan = item; store.set('dsh.lan', item); }
+          resolve(j);
+        })['catch'](function (e) {
+          clearTimeout(timer);
+          if (!firstErr) firstErr = e;
+          if (--left <= 0 && !done) { done = true; reject(firstErr || new Error('连不上')); }
+        });
+      });
+    });
+  }
+
+  if (S.mode === 'api') {
+    if (!S.key) return Promise.reject(new Error('还没填官方 API Key'));
+    return httpGet('https://api.deepseek.com/user/balance', S.key).then(function (r) {
+      var j = null; try { j = JSON.parse(r.body); } catch (e) {}
+      if (r.status !== 200) {
+        var msg = (j && j.error && j.error.message) ? j.error.message : (r.body || '').slice(0, 120);
+        throw new Error('HTTP ' + r.status + ' · ' + msg);
+      }
+      var b = (j.balance_infos || [])[0] || {};
+      return { balance: +b.total_balance || 0, todayUsage: 0, history: {}, tokensByDay: {},
+               models: [],
+               official: { currency: b.currency, granted: b.granted_balance,
+                           topped: b.topped_up_balance, available: j.is_available } };
+    })['catch'](function (e) {
+      if (/Failed to fetch|NetworkError|Load failed/i.test(e.message || '')) {
+        throw new Error('浏览器跨域被拦（官方接口不允许网页直连）—— 装 APK 版或改用局域网模式');
+      }
+      throw e;
+    });
+  }
+
+  if (S.mode === 'custom') {
+    if (!S.url) return Promise.reject(new Error('还没填自定义接口地址'));
+    return httpGet(S.url, S.ckey || null).then(function (r) {
+      var j = null; try { j = JSON.parse(r.body); } catch (e) {}
+      if (r.status !== 200 || !j) {
+        throw new Error('HTTP ' + r.status + ' · ' + String(r.body || '').slice(0, 120));
+      }
+      var v = S.path ? parseFloat(pick(j, S.path)) : guessBalance(j);
+      if (v === null || isNaN(v)) {
+        throw new Error('没能从返回里认出余额，请在设置里填「余额字段路径」');
+      }
+      var granted = pick(j, 'balance_infos.0.granted_balance');
+      return { balance: v, todayUsage: 0, history: {}, tokensByDay: {}, models: [],
+               official: { currency: pick(j, 'balance_infos.0.currency') || 'CNY',
+                           granted: granted, topped: pick(j, 'balance_infos.0.topped_up_balance') } };
+    });
+  }
+  return Promise.reject(new Error('未知数据源'));
+}
+
+/* ── 日期工具（避开 toISOString 的时区坑）── */
+function pad2(n) { return n < 10 ? '0' + n : String(n); }
+function dstr(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+function rangeEndingToday(n) {
+  var out = [], now = new Date(), base = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  for (var i = n - 1; i >= 0; i--) {
+    out.push(dstr(new Date(base.getFullYear(), base.getMonth(), base.getDate() - i)));
+  }
+  return out;
+}
+
+/* ── 渲染 ── */
+function render(d, offline) {
+  var bal = +d.balance || 0;
+  var int = Math.floor(bal);
+  $('balInt').textContent = int.toLocaleString();
+  $('balDec').textContent = (bal - int).toFixed(2).slice(1);
+  $('today').textContent = d.official ? '—' : num2(d.todayUsage || 0);
+  $('todayPct').textContent = d.official
+    ? '接口不提供'
+    : (bal > 0 ? '占余额 ' + ((d.todayUsage || 0) / bal * 100).toFixed(1) + '%' : '余额已用尽');
+
+  var hs = d.history || {}, tk = d.tokensByDay || {};
+  var haveDays = Object.keys(hs).sort();
+  var today = dstr(new Date());
+  var isMonth = S.period === 'month';
+
+  // 服务端没给月度聚合就自己从日数据推（演示模式 / 旧版服务端）
+  if (!d.months || !d.months.length) {
+    var byM = {}, tkM = {}, dl = Object.keys(hs), tl = Object.keys(tk), q0, mx0;
+    for (q0 = 0; q0 < dl.length; q0++) {
+      mx0 = dl[q0].slice(0, 7);
+      byM[mx0] = (byM[mx0] || 0) + (hs[dl[q0]] || 0);
+    }
+    for (q0 = 0; q0 < tl.length; q0++) {
+      mx0 = tl[q0].slice(0, 7);
+      tkM[mx0] = (tkM[mx0] || 0) + (tk[tl[q0]] || 0);
+    }
+    d.months = Object.keys(byM).sort();
+    d.costByMonth = byM;
+    d.tokensByMonth = tkM;
+  }
+  var cm = d.costByMonth || {}, tm = d.tokensByMonth || {};
+
+  // ── 坐标轴：7天=一天一根柱；按月=固定留出最近 N 个月（没数据的月份留空槽）──
+  var MONTH_SLOTS = 6;
+  var axis, costOf, tokOf, labelOf, curKey;
+  if (isMonth) {
+    // 真实账本可能只有一个月，空荡荡只剩一根柱；补成固定月窗更好读
+    var nowM = today.slice(0, 7);
+    var y0 = parseInt(nowM.slice(0, 4), 10), m0 = parseInt(nowM.slice(5, 7), 10);
+    var slots = [];
+    for (var si = MONTH_SLOTS - 1; si >= 0; si--) {
+      var t2 = m0 - si, yy = y0;
+      while (t2 <= 0) { t2 += 12; yy -= 1; }
+      slots.push(yy + '-' + pad2(t2));
+    }
+    // 把账本里早于窗口的月份也纳进来，不丢历史
+    d.months.forEach(function (k) { if (slots.indexOf(k) < 0) slots.push(k); });
+    axis = slots.sort();
+    costOf = function (k) { return cm[k]; };
+    tokOf = function (k) { return tm[k]; };
+    labelOf = function (k) {
+      return (k.slice(0, 4) === String(new Date().getFullYear()))
+        ? (parseInt(k.slice(5, 7), 10) + '月') : (k.slice(2, 4) + '/' + k.slice(5, 7));
+    };
+    curKey = nowM;
+  } else {
+    axis = rangeEndingToday(Number(S.period) || 7);
+    costOf = function (k) { return hs[k]; };
+    tokOf = function (k) { return tk[k]; };
+    labelOf = function (k) { return k.slice(5).replace('-', '/'); };
+    curKey = today;
+  }
+  function hasVal(v) { return v !== undefined && v !== null; }
+
+  // 周期合计：7天=窗口内合计；按月=本月合计
+  var used = 0, sum = 0, tksum = 0, i;
+  for (i = 0; i < axis.length; i++) {
+    if (hasVal(costOf(axis[i]))) { used++; sum += (costOf(axis[i]) || 0); }
+    if (hasVal(tokOf(axis[i]))) { tksum += (tokOf(axis[i]) || 0); }
+  }
+  var usedDays = used, periodSum = sum, periodTok = tksum;
+  if (isMonth) {
+    periodSum = hasVal(cm[curKey]) ? cm[curKey] : 0;
+    periodTok = hasVal(tm[curKey]) ? tm[curKey] : 0;
+    usedDays = 0;
+    for (i = 0; i < haveDays.length; i++) { if (haveDays[i].slice(0, 7) === curKey) usedDays++; }
+  }
+  var perDay = periodSum / (usedDays || 1);
+
+  // 官方接口不提供消费历史 → 不能显示 “¥0.00”，那会被误读为「没花钱」
+  var noHistory = !!d.official;
+  $('weekCap').textContent = noHistory ? '充值余额' : (isMonth ? '本月消耗' : ('近 ' + S.period + ' 日消耗'));
+  $('week').textContent = noHistory ? num2(+((d.official.topped) || 0)) : num2(periodSum);
+  $('avg').textContent = noHistory ? '实际充值金额' :
+    (usedDays ? '日均 ¥' + num2(perDay) + ' · ' + usedDays + ' 天有记录' : '暂无记录');
+  if (noHistory) $('todayCap').textContent = '赠金余额';
+
+  // 官方模式：不画空柱子，直接给一句清晰说明
+  if (d.official) {
+    var chart0 = $('chart');
+    chart0.className = 'chart';
+    chart0.innerHTML = '<div style="font-size:.72rem;color:var(--tx3);margin:auto;text-align:center;line-height:1.8">' +
+      '官方接口只返回账户余额<br>不提供消费历史与模型明细<br>' +
+      '<span style="color:var(--ac)">需要历史曲线，请切到「局域网·电脑」</span></div>';
+    $('chartNote').textContent = '';
+    $('modelCap').textContent = '模型 token 占比';
+    $('models').innerHTML = '<div style="font-size:.72rem;color:var(--tx3)">官方接口不提供</div>';
+    $('tokTotal').textContent = '';
+    toggleOn('#segPeriod', 'p', S.period);
+    toggleOn('#segMetric', 'm', S.metric);
+    // 余额、提示条、状态标记仍需继续渲染
+    $('todayCap').textContent = '赠金余额';
+    $('today').textContent = num2(+((d.official.granted) || 0));
+    $('todayPct').textContent = '赠送额度，优先扣';
+    var strip0 = $('strip'), chip0 = $('stripChip');
+    var g0 = +((d.official.granted) || 0), t0 = +((d.official.topped) || 0);
+    var bad0 = d.official.available === false || bal <= 0;
+    strip0.classList.toggle('warn', bad0);
+    $('stripIco').textContent = bad0 ? '⚠' : '◷';
+    chip0.textContent = bad0 ? '需充值' : '可用';
+    chip0.classList.toggle('ok', !bad0);
+    $('stripTxt').innerHTML = '赠金 <b>¥' + num2(g0) + '</b> · 充值余额 <b>¥' + num2(t0) + '</b>';
+    renderStatus(d, offline);
+    return;
+  }
+
+  // ── 柱状图 ──
+  var isTok = S.metric === 'token';
+  var vals = [], k;
+  for (k = 0; k < axis.length; k++) {
+    var vv = isTok ? tokOf(axis[k]) : costOf(axis[k]);
+    vals.push(hasVal(vv) ? +vv : 0);
+  }
+  var max = Math.max.apply(null, vals.concat([0.0001]));
+  var step = Math.ceil(axis.length / 7);
+  var chart = $('chart');
+  chart.className = 'chart' + (isMonth ? ' monthly' : (axis.length > 8 ? ' dense' : ''));
+  var html = '';
+  for (k = 0; k < axis.length; k++) {
+    var key = axis[k];
+    var v2 = isTok ? tokOf(key) : costOf(key);
+    var ok2 = hasVal(v2);
+    var hh = ok2 ? Math.max(3, Math.sqrt(v2 / max) * 88) : 5;
+    // 月视图无数据：整列虚线空槽（表示“月份存在，只是没记录”）
+    // 日视图无数据：只留一个小底柱
+    var cls = 'col' + (key === curKey ? ' today' : '') + (ok2 ? '' : (isMonth ? ' nb' : ' empty')) +
+              (key === S.selDay ? ' sel' : '');
+    var barStyle = isMonth
+      ? (ok2 ? ('height:' + hh.toFixed(1) + '%') : 'height:100%')
+      : ('height:' + hh.toFixed(1) + '%');
+    // 8 根以内全标（否则 7 天视图会把 10/26 这类倒数第二个标签吃掉）
+    var showLb = (axis.length <= 8) || (k === axis.length - 1) ||
+                 (k % step === 0 && (axis.length - 1 - k) >= 2);
+    html += '<div class="' + cls + '" data-act="detail" data-key="' + key + '">' +
+            '<div class="bar" style="' + barStyle + '"></div>' +
+            '<div class="lb">' + (showLb ? labelOf(key) : '') + '</div></div>';
+  }
+  chart.innerHTML = html || '<div style="font-size:.72rem;color:var(--tx3);margin:auto">暂无数据</div>';
+
+  var note = '';
+  if (!isMonth && !used) note = '这个周期内还没有任何消耗记录';
+  else if (isTok && !periodTok) note = '该数据源不提供 token 明细';
+  else if (isMonth) note = '一根柱子一个月 · 点柱子看当月明细';
+  else if (haveDays.length < Number(S.period)) note = '账本自 ' + haveDays[0].slice(5).replace('-', '/') + ' 起有记录，空白格是无数据';
+  else note = '点柱子看那一天的明细';
+  $('chartNote').textContent = note;
+
+  // 周期按钮 / 指标按钮高亮
+  toggleOn('#segPeriod', 'p', S.period);
+  toggleOn('#segMetric', 'm', S.metric);
+
+  // ── 模型占比 ──
+  var ms, effLabel;
+  if (isMonth) {
+    var mm = (d.modelsByMonth || {})[curKey];
+    ms = (mm && mm.length) ? mm : (d.models || []);
+    effLabel = '本月';
+  } else {
+    var effP = Math.min(Number(S.period), haveDays.length) || Number(S.period);
+    ms = (d.modelsByPeriod && d.modelsByPeriod[String(S.period)]) || d.models || [];
+    effLabel = '近 ' + effP + ' 日';
+  }
+  var cap = $('modelCap');
+  if (cap) cap.textContent = effLabel + '模型 token 占比';
+  if (ms.length) {
+    var mx = 1, m, n;
+    for (m = 0; m < ms.length; m++) mx = Math.max(mx, ms[m].pct);
+    var mh = '';
+    for (n = 0; n < ms.length; n++) {
+      mh += '<div class="row"><div class="nm">' + ms[n].name + '</div>' +
+            '<div class="pc">' + ms[n].pct.toFixed(1) + '%</div>' +
+            '<div class="track"><div class="fill" style="width:' + (ms[n].pct / mx * 100).toFixed(1) + '%"></div></div></div>';
+    }
+    $('models').innerHTML = mh;
+  } else {
+    $('models').innerHTML = '<div style="font-size:.72rem;color:var(--tx3)">该数据源不提供模型明细</div>';
+  }
+  $('tokTotal').textContent = periodTok ? fmtTokens(periodTok) + ' tok' : '';
+
+  // ── 续航 ──
+  var strip = $('strip'), chip = $('stripChip');
+  if (d.official) {
+    // 官方接口只给余额，没有历史 → 改显示充值构成，而不是一句“无法估算”
+    var g = +((d.official.granted) || 0);
+    var t2 = +((d.official.topped) || 0);
+    var avail = d.official.available;
+    strip.classList.toggle('warn', avail === false || bal <= 0);
+    $('stripIco').textContent = (avail === false || bal <= 0) ? '⚠' : '◷';
+    chip.textContent = (avail === false || bal <= 0) ? '需充值' : '可用';
+    chip.classList.toggle('ok', !(avail === false || bal <= 0));
+    $('stripTxt').innerHTML = '赠金 <b>¥' + num2(g) + '</b> · 充值余额 <b>¥' + num2(t2) + '</b>';
+  } else if (!periodSum) {
+    strip.classList.remove('warn');
+    $('stripIco').textContent = '◷';
+    chip.textContent = ''; chip.classList.remove('ok');
+    $('stripTxt').textContent = '暂无消耗记录，无法估算续航';
+  } else {
+    var left = perDay > 0 ? bal / perDay : 0;
+    var leftTxt = left >= 100 ? '100+ 天' : left.toFixed(1) + ' 天';
+    var warn = left < 7;
+    strip.classList.toggle('warn', warn);
+    $('stripIco').textContent = warn ? '⚠' : '◷';
+    chip.classList.toggle('ok', !warn);
+    chip.textContent = warn ? '需充值' : '充足';
+    $('stripTxt').innerHTML = (isMonth ? '本月' : '近 ' + S.period + ' 日') +
+      '均耗 <b>¥' + num2(perDay) + '</b> · 还够 <b>' + leftTxt + '</b>';
+  }
+
+  // ── 状态标记 ──
+  renderStatus(d, offline);
+}
+/* 状态标记渲染（拆出来，官方模式提前 return 时也要用到） */
+function renderStatus(d, offline) {
+  var hero = $('hero');
+  hero.classList.toggle('offline', !!offline);
+  var tag = $('modeTag');
+  var base = MODE_LABEL[S.mode] || S.mode;
+  if (offline) {
+    tag.className = 'tag off';
+    tag.textContent = '离线快照';
+    $('updAt').textContent = '最后同步 ' + (d.__at ? new Date(d.__at).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—');
+    $('srcName').textContent = base + ' · 离线';
+    $('hintNote').textContent = '显示的是最后一次同步的数据 · 点「刷新余额」重试';
+  } else {
+    tag.className = 'tag';
+    tag.textContent = base;
+    $('updAt').textContent = '更新于 ' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    $('srcName').textContent = base;
+    $('hintNote').textContent = S.mode === 'demo' ? '演示数据 · 点右上角 ⚙ 选择数据来源'
+      : (S.mode === 'lan' ? '数据来自电脑上的 DSH 账本'
+      : (S.mode === 'api' ? '官方接口 · 手机联网即可，不需电脑开机' : '数据来自自定义接口'));
+  }
+}
+
+function toggleOn(sel, attr, val) {
+  try {
+    var bs = document.querySelectorAll(sel + ' button');
+    for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset[attr] === String(val));
+  } catch (e) {}
+}
+
+/* ── 日明细 ── */
+function openDetail(key) {
+  S.selDay = key;
+  var d = S.data || DEMO;
+  var isMonth = key.length === 7;
+  var cost = isMonth ? (d.costByMonth || {})[key] : (d.history || {})[key];
+  var tok = isMonth ? (d.tokensByMonth || {})[key] : (d.tokensByDay || {})[key];
+  var det = isMonth ? (d.detailByMonth || {})[key] : (d.detailByDay || {})[key];
+  var models = (det && det.models) || [];
+  // 没给明细时退回到月度/周期聚合（它自带 tokens），避免显示成“无记录”
+  if (!models.length && isMonth) {
+    var mb = (d.modelsByMonth || {})[key] || [];
+    models = mb.map(function (r) { return { name: r.name, tokens: r.tokens }; });
+  }
+
+  $('dayTitle').firstChild.nodeValue = isMonth
+    ? (key.slice(0, 4) + ' 年 ' + parseInt(key.slice(5, 7), 10) + ' 月')
+    : key.replace(/-/g, '/');
+  $('daySub').textContent = isMonth
+    ? (key === dstr(new Date()).slice(0, 7) ? '本月' : '')
+    : (key === dstr(new Date()) ? '今天' : '');
+  var h = '';
+  h += '<div class="kv"><span class="k">' + (isMonth ? '当月扣费' : '当日扣费') + '</span><span class="v">' +
+       (cost === undefined ? '无记录' : '¥' + num2(cost)) + '</span></div>';
+  h += '<div class="kv"><span class="k">' + (isMonth ? '当月 token' : '当日 token') + '</span><span class="v">' +
+       (tok === undefined ? '无记录' : (+tok).toLocaleString()) + '</span></div>';
+  if (models.length) {
+    var tot = 0, i;
+    for (i = 0; i < models.length; i++) tot += models[i].tokens;
+    h += '<div class="subhead">模型分布</div>';
+    for (i = 0; i < models.length; i++) {
+      var pct = tot ? (models[i].tokens / tot * 100) : 0;
+      h += '<div class="row" style="margin-bottom:.45rem"><div class="nm">' + models[i].name + '</div>' +
+           '<div class="pc">' + fmtTokens(models[i].tokens) + ' · ' + pct.toFixed(1) + '%</div>' +
+           '<div class="track"><div class="fill" style="width:' + pct.toFixed(1) + '%"></div></div></div>';
+    }
+  } else if (cost !== undefined || tok !== undefined) {
+    h += '<div class="hint" style="margin-top:.6rem">' +
+         (isMonth ? '这个月没有模型级明细记录' : '这一天没有模型级明细记录') + '</div>';
+  }
+  $('dayBody').innerHTML = h;
+  $('daySheet').classList.add('on');
+  $('mask').classList.add('on');
+  if (S.data) render(S.data, !S.live);
+}
+
+/* 从未成功同步过：绝不拿演示数据冒充真实余额 */
+function showEmptyState(msg) {
+  S.data = null;
+  $('balInt').textContent = '--';
+  $('balDec').textContent = '';
+  $('today').textContent = '--';
+  $('todayPct').textContent = '—';
+  $('weekCap').textContent = '近 7 日消耗';
+  $('week').textContent = '--';
+  $('avg').textContent = '—';
+  $('chart').innerHTML = '<div style="font-size:.7rem;color:var(--tx3);margin:auto;text-align:center;line-height:1.7">' +
+    '还没有同步过数据<br>确认电脑开机、与手机在同一 WiFi</div>';
+  $('chartNote').textContent = '';
+  $('models').innerHTML = '<div style="font-size:.72rem;color:var(--tx3)">—</div>';
+  $('tokTotal').textContent = '';
+  $('modelCap').textContent = '模型 token 占比';
+  $('strip').classList.remove('warn');
+  $('stripIco').textContent = '◷';
+  $('stripTxt').textContent = '没有可用的消耗记录';
+  $('stripChip').textContent = '';
+  $('hero').classList.add('offline');
+  $('modeTag').className = 'tag off';
+  $('modeTag').textContent = '未同步';
+  $('updAt').textContent = '从未同步成功';
+  $('srcName').textContent = (MODE_LABEL[S.mode] || S.mode) + ' · 未连上';
+  $('hintNote').textContent = '点「刷新余额」重试，或去 ⚙ 改电脑地址';
+  toast(msg, true);
+}
+
+/* 把刚拿到的数据推给桌面小组件（只在 APK 里有效，网页版静默跳过） */
+function pushToWidget(d) {
+  try {
+    if (!window.AndroidHost || !AndroidHost.refreshWidget) return;
+    if (!d) { AndroidHost.refreshWidget('', '', ''); return; }
+
+    var bal = (+d.balance || 0).toFixed(2);
+    var today = d.official ? '' : (+d.todayUsage || 0).toFixed(2);
+
+    // 日均：从当前周期的历史里算（官方模式没有，留空）
+    var perDay = '';
+    if (!d.official) {
+      var hs = d.history || {}, keys = Object.keys(hs).sort().slice(-7);
+      var sum = 0, n = 0;
+      for (var i = 0; i < keys.length; i++) { sum += (hs[keys[i]] || 0); n++; }
+      if (n > 0 && sum > 0) perDay = (sum / n).toFixed(2);
+    }
+    AndroidHost.refreshWidget(bal, today, perDay);
+  } catch (e) {}
+}
+
+function refresh(user) {
+  if (S.busy) return;
+  S.busy = true;
+  var ico = $('refIco'), btn = $('refBtn'), lab = $('refLabel');
+  if (ico) ico.classList.add('spin');
+  if (btn) btn.disabled = true;
+  if (lab) lab.textContent = '刷新中…';
+
+  fetchData().then(function (d) {
+    d.__at = Date.now();
+    S.data = d; S.live = true;
+    render(d, false);
+    store.set('dsh.snapshot', JSON.stringify(d));
+    store.set('dsh.snapMode', S.mode);
+    // 把当前可用的地址/模式交给原生层 —— 桌面小组件靠它自己找电脑
+    try { if (window.AndroidHost && AndroidHost.saveConfig) AndroidHost.saveConfig(S.lan || '', S.mode, S.key || ''); } catch (e) {}
+    // 小组件跟着刷：把刚拿到的数值一并推过去，秒变新值（不重复联网）
+    pushToWidget(d);
+    // 成功反馈：数字闪一下 + 明确提示，否则看着像没反应
+    try {
+      var a = document.querySelector('.amt');
+      if (a) { a.classList.remove('flash'); void a.offsetWidth; a.classList.add('flash'); }
+    } catch (e) {}
+    if (user) toast('已更新 · ' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }));
+  })['catch'](function (err) {
+    S.live = false;
+    var cached = null;
+    try { cached = JSON.parse(store.get('dsh.snapshot', 'null')); } catch (e) {}
+    if (cached && cached.balance !== undefined) {
+      S.data = cached;
+      render(cached, true);
+      toast(err.message + ' —— 显示离线快照', true);
+    } else {
+      showEmptyState(err.message);
+    }
+  })['then'](function () {
+    S.busy = false;
+    if (ico) ico.classList.remove('spin');
+    if (btn) btn.disabled = false;
+    if (lab) lab.textContent = '刷新余额';
+  });
+}
+
+/* ── 抽屉 ── */
+function openSheet() {
+  ['lan', 'api', 'custom', 'demo'].forEach(function (m) {
+    var pane = $('pane' + m.charAt(0).toUpperCase() + m.slice(1));
+    if (pane) pane.style.display = (S.mode === m ? '' : 'none');
+    var b = document.querySelector('#segMode [data-mode="' + m + '"]');
+    if (b) b.classList.toggle('on', S.mode === m);
+  });
+  var tb = document.querySelectorAll('#segTheme button');
+  for (var i = 0; i < tb.length; i++) tb[i].classList.toggle('on', tb[i].dataset.t === S.theme);
+  if ($('inLan')) $('inLan').value = S.lan;
+  if ($('inKey')) $('inKey').value = S.key;
+  if ($('inUrl')) $('inUrl').value = S.url;
+  if ($('inCKey')) $('inCKey').value = S.ckey;
+  if ($('inPath')) $('inPath').value = S.path;
+  $('cfgState').textContent = S.data && S.live ? '当前连接正常' : (S.data ? '当前显示离线快照' : '');
+  $('sheet').classList.add('on');
+  $('mask').classList.add('on');
+}
+function closeSheets() {
+  $('sheet').classList.remove('on');
+  $('daySheet').classList.remove('on');
+  $('mask').classList.remove('on');
+  S.selDay = null;
+}
+
+/* ── 事件委托（唯一入口）── */
+document.addEventListener('click', function (ev) {
+  var el = ev.target;
+  while (el && el !== document.body) {
+    if (el.dataset && el.dataset.act) break;
+    el = el.parentNode;
+  }
+  if (!el || !el.dataset || !el.dataset.act) return;
+  var act = el.dataset.act;
+
+  if (act === 'theme') {
+    S.theme = (resolveTheme() === 'dark') ? 'light' : 'dark';
+    store.set('dsh.theme', S.theme);
+    applyTheme(true);
+    toast(S.theme === 'dark' ? '已切到夜间模式' : '已切到白天模式');
+  }
+  else if (act === 'settings') { openSheet(); }
+  else if (act === 'close') { closeSheets(); }
+  else if (act === 'detail') { openDetail(el.dataset.key); }
+  else if (act === 'thmode') {
+    S.theme = el.dataset.t; store.set('dsh.theme', S.theme); applyTheme(true);
+    var tb = document.querySelectorAll('#segTheme button');
+    for (var i = 0; i < tb.length; i++) tb[i].classList.toggle('on', tb[i].dataset.t === S.theme);
+    toast('外观：' + ({ auto: '跟随系统', light: '白天', dark: '夜间' })[S.theme]);
+  }
+  else if (act === 'metric') {
+    S.metric = el.dataset.m; store.set('dsh.metric', S.metric);
+    if (S.data) render(S.data, !S.live); else refresh();
+  }
+  else if (act === 'mode') {
+    S.mode = el.dataset.mode;
+    ['lan', 'api', 'custom', 'demo'].forEach(function (m) {
+      var pane = $('pane' + m.charAt(0).toUpperCase() + m.slice(1));
+      if (pane) pane.style.display = (S.mode === m ? '' : 'none');
+      var b = document.querySelector('#segMode [data-mode="' + m + '"]');
+      if (b) b.classList.toggle('on', S.mode === m);
+    });
+  }
+  else if (act === 'period') {
+    S.period = el.dataset.p;
+    store.set('dsh.period', S.period);
+    if (S.data) render(S.data, !S.live); else refresh();
+  }
+  else if (act === 'refresh') { refresh(true); }
+  else if (act === 'save') {
+    S.lan = $('inLan') ? $('inLan').value.trim() : '';
+    S.key = $('inKey') ? $('inKey').value.trim() : '';
+    S.url = $('inUrl') ? $('inUrl').value.trim() : '';
+    S.ckey = $('inCKey') ? $('inCKey').value.trim() : '';
+    S.path = $('inPath') ? $('inPath').value.trim() : '';
+    store.set('dsh.mode', S.mode); store.set('dsh.lan', S.lan); store.set('dsh.key', S.key);
+    store.set('dsh.url', S.url); store.set('dsh.ckey', S.ckey); store.set('dsh.path', S.path);
+    closeSheets();
+    refresh(true);
+  }
+}, false);
+
+document.addEventListener('visibilitychange', function () {
+  if (!document.hidden && S.mode !== 'demo') refresh();
+});
+
+/* ── 启动：先把快照画出来，再去刷新 ── */
+(function boot() {
+  try { applyTheme(); } catch (e) {}
+  /* 预览/截图用：?sheet=settings 展开设置面板；?day=YYYY-MM-DD 展开某天明细 */
+  try {
+    var _sh = _q.get('sheet'), _dd = _q.get('day');
+    if (_sh === 'settings') setTimeout(openSheet, 500);
+    if (_dd) setTimeout(function () { openDetail(_dd); }, 650);
+  } catch (e) {}
+  try {
+    var snap = store.get('dsh.snapshot', '');
+    if (snap && S.mode !== 'demo') {
+      var d = JSON.parse(snap);
+      if (d && d.balance !== undefined) { S.data = d; render(d, true); }
+    }
+  } catch (e) {}
+  try { refresh(); } catch (e) { toast('初始化失败：' + (e.message || e), true); }
+})();
+</script>
+</body>
+</html>

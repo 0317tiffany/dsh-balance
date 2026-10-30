@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 夜间：values-night 让小组件自动跟随系统深色，不需要用户手动切 -->
+<resources>
+    <color name="widget_bg">#FF14181F</color>
+    <color name="widget_bd">#FF232A36</color>
+    <color name="widget_tx">#FFE8EDF5</color>
+    <color name="widget_sub">#FF6B7A91</color>
+    <color name="widget_ac">#FF7289FF</color>
+    <color name="widget_warn">#FFE0B173</color>
+</resources>

@@ -1,0 +1,39 @@
+# 构建产物
+apk/build/
+apk/DSH余额.apk
+apk/assets/index.html
+*.apk
+
+# 签名密钥 —— 绝对不要提交
+*.keystore
+*.jks
+*.p12
+
+# 本地配置（可能含个人 API Key）
+build-config.json
+.env
+.env.*
+
+# 依赖与缓存
+node_modules/
+android-sdk/
+*.zip
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 临时文件
+*.log
+_tmp/
+_bak/
+_pack/
+_t*.png
+_diag.html
+_app.js
+
+# DSH 工具临时锁文件
+.dsh-ops-update-*.lock

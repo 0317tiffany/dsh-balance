@@ -1,0 +1,10 @@
+{
+  "_comment": "复制此文件为 build-config.json 后按需修改。该文件已被 .gitignore 忽略，不会提交。",
+  "_comment2": "API Key 不要放在这里 —— 由用户在 App 内填写，只存手机本地。",
+
+  "_mode": "默认数据源。api = 官方接口（手机联网即可，不需要电脑）；lan = 局域网读 DSH 账本（需要电脑开服务）",
+  "DSH_MODE": "api",
+
+  "_lan": "局域网候选地址，用 | 分隔。留空则用 UDP 自动发现（推荐）",
+  "DSH_LAN": ""
+}

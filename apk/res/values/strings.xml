@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DSH余额</string>
+    <string name="widget_title">DeepSeek 余额</string>
+    <string name="widget_label">余额小组件</string>
+    <string name="widget_desc">在桌面直接看剩余余额、今日消耗与续航天数</string>
+    <string name="widget_loading">正在同步…</string>
+    <string name="widget_never">还没同步过，点一下打开 App</string>
+</resources>
